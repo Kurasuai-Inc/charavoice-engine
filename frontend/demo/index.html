@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHARAVOICE Engine Voice Test</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --bg: #101217;
+  --panel: #1a1f28;
+  --panel2: #232a35;
+  --panel3: #2b3441;
+  --border: #384150;
+  --text: #edf1f7;
+  --muted: #9aa6b8;
+  --accent: #4f8cff;
+  --accent2: #2f6eea;
+  --green: #3ecf7e;
+  --red: #ff7070;
+  --amber: #f0b84f;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+button, select, input, textarea { font: inherit; }
+.page {
+  width: min(1440px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 22px 0 40px;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+h1 {
+  margin: 0 0 4px;
+  font-size: clamp(1.4rem, 2.4vw, 2.05rem);
+  letter-spacing: 0;
+}
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.status {
+  min-height: 22px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+.status.ok { color: var(--green); }
+.status.warn { color: var(--amber); }
+.status.error { color: var(--red); }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.global-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) minmax(160px, 1fr) minmax(140px, 0.8fr) 100px minmax(150px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+}
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+select, input, textarea {
+  width: 100%;
+  color: var(--text);
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+select:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.95fr) minmax(420px, 1.05fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+.sample-panel {
+  display: grid;
+  gap: 14px;
+}
+.sample-group h2 {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  letter-spacing: 0;
+}
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.sample-card {
+  width: 100%;
+  text-align: left;
+  display: block;
+  min-width: 0;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  white-space: normal;
+  overflow: hidden;
+}
+.sample-card:hover, .sample-card.active {
+  border-color: var(--accent);
+  background: #1f2632;
+}
+.sample-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--panel3);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.sample-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.editor-panel {
+  display: grid;
+  gap: 12px;
+}
+.mode-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.segmented {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.segmented button {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.segmented button.active {
+  background: var(--accent2);
+  color: #fff;
+}
+.input-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+}
+.hidden { display: none; }
+.code-input {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.request-box {
+  min-height: 260px;
+}
+.full-control-box {
+  min-height: 210px;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn {
+  border: 0;
+  border-radius: 6px;
+  padding: 9px 13px;
+  color: #fff;
+  background: var(--accent2);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--accent); }
+.btn:disabled { opacity: 0.55; cursor: wait; }
+.btn.secondary {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn.secondary:hover { background: var(--panel3); }
+.btn.warn {
+  background: #9d5c16;
+}
+.player-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.player {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.player h2 {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+  letter-spacing: 0;
+}
+audio { width: 100%; margin-top: 8px; }
+.meter {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.meter strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 1120px) {
+  .global-controls, .layout, .player-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .page { width: min(100vw - 20px, 1440px); padding-top: 16px; }
+  .topbar { align-items: flex-start; flex-direction: column; }
+  .sample-grid, .input-grid { grid-template-columns: 1fr; }
+  .actions .btn { flex: 1 1 180px; }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="topbar">
+    <div>
+      <h1>CHARAVOICE Engine Voice Test</h1>
+      <p class="subtitle">通常 OGG / Streaming PCM / Mixed chunks / Full Control</p>
+    </div>
+    <div class="status" id="globalStatus">Loading models...</div>
+  </header>
+
+  <section class="panel">
+    <div class="global-controls">
+      <div class="field">
+        <label>モデル</label>
+        <select id="modelSelect"></select>
+      </div>
+      <div class="field">
+        <label>話者</label>
+        <select id="speakerSelect"></select>
+      </div>
+      <div class="field">
+        <label>スタイル</label>
+        <select id="styleSelect"></select>
+      </div>
+      <div class="field">
+        <label>速度</label>
+        <input type="number" id="lengthInput" value="1.0" min="0.5" max="2.0" step="0.05">
+      </div>
+      <div class="field">
+        <label>Full Control 対象</label>
+        <select id="convertSelect">
+          <option value="JP">JP only</option>
+          <option value="JP,EN">JP + EN</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <aside class="sample-panel" id="samplePanel"></aside>
+
+    <section class="editor-panel">
+      <div class="panel">
+        <div class="mode-row">
+          <div class="segmented" aria-label="Input mode">
+            <button type="button" id="textModeBtn" class="active">Text</button>
+            <button type="button" id="chunksModeBtn">Chunks</button>
+          </div>
+          <span class="status" id="inputStatus"></span>
+        </div>
+
+        <div id="textEditor" class="input-grid">
+          <div class="field">
+            <label>言語</label>
+            <select id="languageSelect">
+              <option value="JP">JP</option>
+              <option value="EN">EN</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>テキスト</label>
+            <textarea id="textInput">やったー！テストで満点取れた！私とっても嬉しいな！
+どうして私の意見を無視するの？許せない！ムカつく！あんたなんか死ねばいいのに。
+あはははっ！この漫画めっちゃ笑える、見てよこれ、ふふふ、あはは。
+あなたがいなくなって、私は一人になっちゃって、泣いちゃいそうなほど悲しい。</textarea>
+          </div>
+        </div>
+
+        <div id="chunksEditor" class="field hidden">
+          <label>Mixed chunks JSON</label>
+          <textarea id="chunksInput" class="code-input" spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="actions">
+          <button class="btn secondary" id="showNormalBtn">通常 Payload</button>
+          <button class="btn" id="normalPlayBtn">通常合成 & 再生</button>
+          <button class="btn secondary" id="showStreamBtn">Streaming Payload</button>
+          <button class="btn" id="streamPlayBtn">Streaming 合成 & 再生</button>
+          <button class="btn warn" id="stopStreamBtn" disabled>Streaming 停止</button>
+        </div>
+        <div class="status" id="synthesisStatus"></div>
+      </div>
+
+      <div class="player-grid">
+        <div class="player">
+          <h2>通常合成</h2>
+          <audio id="normalAudio" controls></audio>
+          <div class="meter">
+            <span>Total: <strong id="normalTotal">-</strong></span>
+            <span>Size: <strong id="normalSize">-</strong></span>
+          </div>
+        </div>
+        <div class="player">
+          <h2>Streaming</h2>
+          <div class="meter">
+            <span>TTFB: <strong id="streamTtfb">-</strong></span>
+            <span>Total: <strong id="streamTotal">-</strong></span>
+            <span>Samples: <strong id="streamSamples">-</strong></span>
+            <span>Duration: <strong id="streamDuration">-</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="actions">
+          <button class="btn secondary" id="fullConvertBtn">Full Control 生成</button>
+          <button class="btn" id="fullNormalBtn">Full Control 通常再生</button>
+          <button class="btn" id="fullStreamBtn">Full Control Streaming</button>
+        </div>
+        <div class="field">
+          <label>Full Control Payload</label>
+          <textarea id="fullControlInput" class="code-input full-control-box" spellcheck="false"></textarea>
+        </div>
+        <div class="status" id="fullControlStatus"></div>
+      </div>
+
+      <div class="panel">
+        <div class="field">
+          <label>Request JSON</label>
+          <textarea id="requestInput" class="code-input request-box" spellcheck="false"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn secondary" id="copyRequestBtn">Copy</button>
+        </div>
+        <div class="status" id="requestStatus"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+const API_BASE = location.origin;
+const SAMPLE_RATE = 44100;
+
+const sampleGroups = [
+  {
+    title: 'Style-Bert-VITS2 本家',
+    samples: [
+      {
+        id: 'sbv2-initial',
+        title: '初期文',
+        language: 'JP',
+        text: 'こんにちは、初めまして。あなたの名前はなんていうの？',
+      },
+      {
+        id: 'sbv2-emotion-lines',
+        title: '感情 4 行',
+        language: 'JP',
+        text: `あなたがそんなこと言うなんて、私はとっても嬉しい。
+あなたがそんなこと言うなんて、私はとっても怒ってる。
+あなたがそんなこと言うなんて、私はとっても驚いてる。
+あなたがそんなこと言うなんて、私はとっても辛い。`,
+      },
+      {
+        id: 'sbv2-emotion-casual',
+        title: '感情セリフ',
+        language: 'JP',
+        text: `やったー！テストで満点取れた！私とっても嬉しいな！
+どうして私の意見を無視するの？許せない！ムカつく！あんたなんか死ねばいいのに。
+あはははっ！この漫画めっちゃ笑える、見てよこれ、ふふふ、あはは。
+あなたがいなくなって、私は一人になっちゃって、泣いちゃいそうなほど悲しい。`,
+      },
+      {
+        id: 'sbv2-emotion-polite',
+        title: '感情セリフ 丁寧',
+        language: 'JP',
+        text: `やりました！テストで満点取れましたよ！私とっても嬉しいです！
+どうして私の意見を無視するんですか？許せません！ムカつきます！あんたなんか死んでください。
+あはははっ！この漫画めっちゃ笑えます、見てくださいこれ、ふふふ、あはは。
+あなたがいなくなって、私は一人になっちゃって、泣いちゃいそうなほど悲しいです。`,
+      },
+      {
+        id: 'sbv2-tts-description',
+        title: '音声合成説明',
+        language: 'JP',
+        text: `音声合成は、機械学習を活用して、テキストから人の声を再現する技術です。この技術は、言語の構造を解析し、それに基づいて音声を生成します。
+この分野の最新の研究成果を使うと、より自然で表現豊かな音声の生成が可能である。深層学習の応用により、感情やアクセントを含む声質の微妙な変化も再現することが出来る。`,
+      },
+    ],
+  },
+  {
+    title: '英語',
+    samples: [
+      {
+        id: 'sbv2-en-description',
+        title: 'SBV2 English',
+        language: 'EN',
+        text: 'Speech synthesis is the artificial production of human speech. A computer system used for this purpose is called a speech synthesizer, and can be implemented in software or hardware products.',
+      },
+      {
+        id: 'en-emotion-casual',
+        title: 'Emotion lines',
+        language: 'EN',
+        text: `Yes! I got a perfect score on the test! I am so happy!
+Why are you ignoring my opinion? I cannot forgive that! It makes me so angry.
+Ahahaha! This comic is hilarious. Look at this part, hehe, ahaha.
+Now that you are gone, I am all alone, and I feel so sad I might cry.`,
+      },
+      {
+        id: 'en-emotion-polite',
+        title: 'Polite emotion lines',
+        language: 'EN',
+        text: `I did it! I got a perfect score on the test! I am very happy.
+Why are you ignoring my opinion? I cannot accept that. It is extremely upsetting.
+Ahahaha! This comic is very funny. Please look at this part, hehe, ahaha.
+Now that you are gone, I am all alone, and I feel so sad that I might cry.`,
+      },
+    ],
+  },
+  {
+    title: '日本語に英語交じり',
+    samples: [
+      {
+        id: 'jp-teacher-1',
+        title: '英語教師風',
+        chunks: [
+          { language: 'JP', text: '今日は「' },
+          { language: 'EN', text: 'I got a perfect score on the test' },
+          { language: 'JP', text: '」という表現を練習します。意味は「テストで満点取れた」で、とても嬉しい気持ちを伝えるときに使えます。' },
+        ],
+      },
+      {
+        id: 'jp-teacher-2',
+        title: '英語教師風 丁寧',
+        chunks: [
+          { language: 'JP', text: '次は「' },
+          { language: 'EN', text: 'I am very happy' },
+          { language: 'JP', text: '」です。意味は「私とっても嬉しいです」で、落ち着いた丁寧な言い方として発音を確認してみましょう。' },
+        ],
+      },
+    ],
+  },
+  {
+    title: '英語に日本語交じり',
+    samples: [
+      {
+        id: 'en-teacher-1',
+        title: 'Japanese lesson',
+        chunks: [
+          { language: 'EN', text: 'Today we will practice the phrase "' },
+          { language: 'JP', text: 'テストで満点取れた' },
+          { language: 'EN', text: '." It means that you got a perfect score on the test, and it carries a very happy and excited feeling.' },
+        ],
+      },
+      {
+        id: 'en-teacher-2',
+        title: 'Japanese lesson polite',
+        chunks: [
+          { language: 'EN', text: 'Next, please repeat "' },
+          { language: 'JP', text: '私とっても嬉しいです' },
+          { language: 'EN', text: '." This is a polite way to say that you are very happy, so try to keep the tone bright and clear.' },
+        ],
+      },
+    ],
+  },
+];
+
+let modelsInfo = {};
+let inputMode = 'text';
+let selectedSampleId = 'sbv2-emotion-casual';
+let streamAbort = null;
+let audioCtx = null;
+let streamSources = [];
+let normalAudioUrl = null;
+
+const modelSelect = document.getElementById('modelSelect');
+const speakerSelect = document.getElementById('speakerSelect');
+const styleSelect = document.getElementById('styleSelect');
+const lengthInput = document.getElementById('lengthInput');
+const convertSelect = document.getElementById('convertSelect');
+const globalStatus = document.getElementById('globalStatus');
+const samplePanel = document.getElementById('samplePanel');
+const textModeBtn = document.getElementById('textModeBtn');
+const chunksModeBtn = document.getElementById('chunksModeBtn');
+const textEditor = document.getElementById('textEditor');
+const chunksEditor = document.getElementById('chunksEditor');
+const languageSelect = document.getElementById('languageSelect');
+const textInput = document.getElementById('textInput');
+const chunksInput = document.getElementById('chunksInput');
+const inputStatus = document.getElementById('inputStatus');
+const synthesisStatus = document.getElementById('synthesisStatus');
+const requestInput = document.getElementById('requestInput');
+const requestStatus = document.getElementById('requestStatus');
+const normalAudio = document.getElementById('normalAudio');
+const normalTotal = document.getElementById('normalTotal');
+const normalSize = document.getElementById('normalSize');
+const streamTtfb = document.getElementById('streamTtfb');
+const streamTotal = document.getElementById('streamTotal');
+const streamSamples = document.getElementById('streamSamples');
+const streamDuration = document.getElementById('streamDuration');
+const stopStreamBtn = document.getElementById('stopStreamBtn');
+const fullControlInput = document.getElementById('fullControlInput');
+const fullControlStatus = document.getElementById('fullControlStatus');
+
+function formatMs(ms) {
+  return ms < 1000 ? ms.toFixed(0) + 'ms' : (ms / 1000).toFixed(2) + 's';
+}
+
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.floor(seconds % 60);
+  return minutes + ':' + String(rest).padStart(2, '0');
+}
+
+function escapeHtml(value) {
+  const node = document.createElement('div');
+  node.textContent = value;
+  return node.innerHTML;
+}
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function setStatus(node, message, type = '') {
+  node.textContent = message;
+  node.className = 'status' + (type ? ' ' + type : '');
+}
+
+function stripNulls(value) {
+  if (Array.isArray(value)) return value.map(stripNulls);
+  if (value && typeof value === 'object') {
+    const output = {};
+    for (const [key, item] of Object.entries(value)) {
+      if (item !== null && item !== undefined) output[key] = stripNulls(item);
+    }
+    return output;
+  }
+  return value;
+}
+
+function displayTextForSample(sample) {
+  if (sample.chunks) return sample.chunks.map((chunk) => chunk.text).join('');
+  return sample.text;
+}
+
+function renderSamples() {
+  samplePanel.innerHTML = '';
+  for (const group of sampleGroups) {
+    const section = document.createElement('section');
+    section.className = 'sample-group';
+    const cards = group.samples.map((sample) => {
+      const tag = sample.chunks ? 'chunks' : sample.language;
+      return `
+        <button type="button" class="sample-card ${sample.id === selectedSampleId ? 'active' : ''}" data-sample-id="${sample.id}">
+          <span class="sample-title">
+            <span>${escapeHtml(sample.title)}</span>
+            <span class="tag">${escapeHtml(tag)}</span>
+          </span>
+          <span class="sample-text">${escapeHtml(displayTextForSample(sample))}</span>
+        </button>`;
+    }).join('');
+    section.innerHTML = `
+      <h2>${escapeHtml(group.title)}</h2>
+      <div class="sample-grid">${cards}</div>`;
+    samplePanel.appendChild(section);
+  }
+}
+
+function findSample(id) {
+  for (const group of sampleGroups) {
+    const sample = group.samples.find((item) => item.id === id);
+    if (sample) return sample;
+  }
+  return null;
+}
+
+function setInputMode(mode) {
+  inputMode = mode;
+  textModeBtn.classList.toggle('active', mode === 'text');
+  chunksModeBtn.classList.toggle('active', mode === 'chunks');
+  textEditor.classList.toggle('hidden', mode !== 'text');
+  chunksEditor.classList.toggle('hidden', mode !== 'chunks');
+  setStatus(inputStatus, mode === 'text' ? 'Text request' : 'Mixed chunks request');
+}
+
+function applySample(sample) {
+  selectedSampleId = sample.id;
+  renderSamples();
+  if (sample.chunks) {
+    chunksInput.value = JSON.stringify(sample.chunks, null, 2);
+    textInput.value = displayTextForSample(sample);
+    setInputMode('chunks');
+  } else {
+    languageSelect.value = sample.language;
+    textInput.value = sample.text;
+    chunksInput.value = JSON.stringify([{ language: sample.language, text: sample.text }], null, 2);
+    setInputMode('text');
+  }
+  fullControlInput.value = '';
+  updateRequestPreview(false);
+}
+
+async function fetchModelsInfo() {
+  const response = await fetch(API_BASE + '/models/info');
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  modelsInfo = await response.json();
+}
+
+function populateModelSelects() {
+  modelSelect.innerHTML = '';
+  for (const [id, data] of Object.entries(modelsInfo)) {
+    const modelPath = data.provider_metadata?.model_path || '';
+    const name = data.model_name || data.model_file || modelPath.split('/').pop() || `Model ${id}`;
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = name;
+    modelSelect.appendChild(option);
+  }
+  updateSpeakerAndStyle();
+}
+
+function updateSpeakerAndStyle() {
+  const data = modelsInfo[modelSelect.value];
+  if (!data) return;
+  speakerSelect.innerHTML = '';
+  for (const speaker of data.speakers || []) {
+    const option = document.createElement('option');
+    option.value = speaker.speaker_id;
+    option.textContent = speaker.speaker_name;
+    speakerSelect.appendChild(option);
+  }
+  styleSelect.innerHTML = '';
+  const styles = Object.keys(data.style2id || {});
+  for (const styleName of styles) {
+    const option = document.createElement('option');
+    option.value = styleName;
+    option.textContent = styleName;
+    styleSelect.appendChild(option);
+  }
+}
+
+function voiceOptions(streaming) {
+  return {
+    model_id: Number(modelSelect.value || 0),
+    speaker_id: Number(speakerSelect.value || 0),
+    style: styleSelect.value || 'Neutral',
+    length: Number(lengthInput.value || 1.0),
+    streaming,
+    format: streaming ? 'pcm' : 'ogg',
+  };
+}
+
+function currentSourcePayload() {
+  if (inputMode === 'chunks') {
+    return { chunks: JSON.parse(chunksInput.value) };
+  }
+  const text = textInput.value.trim();
+  if (!text) throw new Error('Text is empty');
+  return { text, language: languageSelect.value };
+}
+
+function buildPayload(streaming) {
+  return stripNulls({
+    ...currentSourcePayload(),
+    ...voiceOptions(streaming),
+  });
+}
+
+function updateRequestPreview(streaming) {
+  try {
+    const payload = buildPayload(streaming);
+    requestInput.value = JSON.stringify(payload, null, 2);
+    setStatus(requestStatus, streaming ? 'Streaming payload ready' : 'Normal payload ready', 'ok');
+    return payload;
+  } catch (error) {
+    setStatus(requestStatus, error.message, 'error');
+    return null;
+  }
+}
+
+function convertLanguages() {
+  return convertSelect.value.split(',').map((item) => item.trim()).filter(Boolean);
+}
+
+async function buildFullControlPayload(streaming) {
+  const source = currentSourcePayload();
+  const response = await fetch(API_BASE + '/full-control/convert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...source,
+      convert_languages: convertLanguages(),
+    }),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+  const data = await response.json();
+  const payload = stripNulls({
+    chunks: data.chunks,
+    ...voiceOptions(streaming),
+  });
+  fullControlInput.value = JSON.stringify(payload, null, 2);
+  requestInput.value = JSON.stringify(payload, null, 2);
+  if (data.warnings && data.warnings.length > 0) {
+    setStatus(fullControlStatus, data.warnings.join(' '), 'warn');
+  } else {
+    setStatus(fullControlStatus, 'Full control payload ready', 'ok');
+  }
+  return payload;
+}
+
+function readFullControlPayload(streaming) {
+  if (!fullControlInput.value.trim()) return null;
+  const payload = JSON.parse(fullControlInput.value);
+  return stripNulls({
+    ...payload,
+    ...voiceOptions(streaming),
+  });
+}
+
+async function playNormal(payload) {
+  const start = performance.now();
+  setStatus(synthesisStatus, 'Normal synthesis...');
+  const response = await fetch(API_BASE + '/voice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+  const blob = await response.blob();
+  if (normalAudioUrl) URL.revokeObjectURL(normalAudioUrl);
+  normalAudioUrl = URL.createObjectURL(blob);
+  normalAudio.src = normalAudioUrl;
+  normalTotal.textContent = formatMs(performance.now() - start);
+  normalSize.textContent = (blob.size / 1024).toFixed(1) + ' KB';
+  setStatus(synthesisStatus, 'Normal audio ready', 'ok');
+  try {
+    await normalAudio.play();
+  } catch {
+    setStatus(synthesisStatus, 'Normal audio ready. Press play if the browser blocked autoplay.', 'warn');
+  }
+}
+
+function stopStreamAudio() {
+  if (streamAbort) streamAbort.abort();
+  for (const source of streamSources) {
+    try { source.stop(); } catch {}
+    try { source.disconnect(); } catch {}
+  }
+  streamSources = [];
+  stopStreamBtn.disabled = true;
+}
+
+function pcmBytesToFloat32(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const samples = new Float32Array(bytes.byteLength / 2);
+  for (let i = 0; i < samples.length; i++) {
+    samples[i] = view.getInt16(i * 2, true) / 32768;
+  }
+  return samples;
+}
+
+async function ensureAudioContext() {
+  if (!audioCtx) audioCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+}
+
+async function playStreaming(payload) {
+  await ensureAudioContext();
+  stopStreamAudio();
+  streamAbort = new AbortController();
+  streamTtfb.textContent = '...';
+  streamTotal.textContent = '...';
+  streamSamples.textContent = '0';
+  streamDuration.textContent = '0:00';
+  stopStreamBtn.disabled = false;
+  setStatus(synthesisStatus, 'Streaming synthesis...');
+
+  const start = performance.now();
+  let firstByteMs = null;
+  let totalSamples = 0;
+  let scheduledTime = audioCtx.currentTime + 0.06;
+  let leftover = new Uint8Array(0);
+
+  const response = await fetch(API_BASE + '/voice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: streamAbort.signal,
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+
+  const reader = response.body.getReader();
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (firstByteMs === null) {
+        firstByteMs = performance.now() - start;
+        streamTtfb.textContent = formatMs(firstByteMs);
+      }
+
+      let chunk = value;
+      if (leftover.length > 0) {
+        chunk = new Uint8Array(leftover.length + value.length);
+        chunk.set(leftover);
+        chunk.set(value, leftover.length);
+      }
+      const usable = chunk.length - (chunk.length % 2);
+      leftover = usable === chunk.length ? new Uint8Array(0) : chunk.slice(usable);
+      if (usable === 0) continue;
+
+      const floatData = pcmBytesToFloat32(chunk.slice(0, usable));
+      totalSamples += floatData.length;
+      streamSamples.textContent = totalSamples.toLocaleString();
+      streamDuration.textContent = formatTime(totalSamples / SAMPLE_RATE);
+
+      const buffer = audioCtx.createBuffer(1, floatData.length, SAMPLE_RATE);
+      buffer.getChannelData(0).set(floatData);
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioCtx.destination);
+      source.start(scheduledTime);
+      streamSources.push(source);
+      scheduledTime += buffer.duration;
+    }
+    streamTotal.textContent = formatMs(performance.now() - start);
+    setStatus(synthesisStatus, 'Streaming audio ready', 'ok');
+  } catch (error) {
+    if (error.name !== 'AbortError') throw error;
+    setStatus(synthesisStatus, 'Streaming stopped', 'warn');
+  } finally {
+    stopStreamBtn.disabled = true;
+  }
+}
+
+function setBusy(busy) {
+  for (const id of ['normalPlayBtn', 'streamPlayBtn', 'fullNormalBtn', 'fullStreamBtn', 'fullConvertBtn']) {
+    document.getElementById(id).disabled = busy;
+  }
+}
+
+async function runAction(action) {
+  try {
+    setBusy(true);
+    let payload;
+    if (action === 'show-normal') {
+      updateRequestPreview(false);
+      return;
+    }
+    if (action === 'show-stream') {
+      updateRequestPreview(true);
+      return;
+    }
+    if (action === 'normal') {
+      payload = updateRequestPreview(false);
+      if (payload) await playNormal(payload);
+      return;
+    }
+    if (action === 'stream') {
+      payload = updateRequestPreview(true);
+      if (payload) await playStreaming(payload);
+      return;
+    }
+    if (action === 'full-convert') {
+      await buildFullControlPayload(false);
+      return;
+    }
+    if (action === 'full-normal') {
+      payload = readFullControlPayload(false) || await buildFullControlPayload(false);
+      requestInput.value = JSON.stringify(payload, null, 2);
+      await playNormal(payload);
+      return;
+    }
+    if (action === 'full-stream') {
+      payload = readFullControlPayload(true) || await buildFullControlPayload(true);
+      requestInput.value = JSON.stringify(payload, null, 2);
+      await playStreaming(payload);
+    }
+  } catch (error) {
+    setStatus(synthesisStatus, error.message, 'error');
+    setStatus(requestStatus, error.message, 'error');
+  } finally {
+    setBusy(false);
+  }
+}
+
+samplePanel.addEventListener('click', (event) => {
+  const card = event.target.closest('[data-sample-id]');
+  if (!card) return;
+  const sample = findSample(card.dataset.sampleId);
+  if (sample) applySample(sample);
+});
+textModeBtn.addEventListener('click', () => {
+  setInputMode('text');
+  updateRequestPreview(false);
+});
+chunksModeBtn.addEventListener('click', () => {
+  setInputMode('chunks');
+  updateRequestPreview(false);
+});
+modelSelect.addEventListener('change', () => {
+  updateSpeakerAndStyle();
+  updateRequestPreview(false);
+});
+for (const node of [speakerSelect, styleSelect, lengthInput, languageSelect, convertSelect]) {
+  node.addEventListener('change', () => updateRequestPreview(false));
+}
+textInput.addEventListener('input', () => updateRequestPreview(false));
+chunksInput.addEventListener('input', () => updateRequestPreview(false));
+document.getElementById('showNormalBtn').addEventListener('click', () => runAction('show-normal'));
+document.getElementById('normalPlayBtn').addEventListener('click', () => runAction('normal'));
+document.getElementById('showStreamBtn').addEventListener('click', () => runAction('show-stream'));
+document.getElementById('streamPlayBtn').addEventListener('click', () => runAction('stream'));
+document.getElementById('stopStreamBtn').addEventListener('click', stopStreamAudio);
+document.getElementById('fullConvertBtn').addEventListener('click', () => runAction('full-convert'));
+document.getElementById('fullNormalBtn').addEventListener('click', () => runAction('full-normal'));
+document.getElementById('fullStreamBtn').addEventListener('click', () => runAction('full-stream'));
+document.getElementById('copyRequestBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(requestInput.value);
+    setStatus(requestStatus, 'Copied', 'ok');
+  } catch (error) {
+    setStatus(requestStatus, error.message, 'error');
+  }
+});
+
+renderSamples();
+fetchModelsInfo()
+  .then(() => {
+    populateModelSelects();
+    setStatus(globalStatus, 'Ready', 'ok');
+    applySample(findSample(selectedSampleId));
+  })
+  .catch((error) => {
+    setStatus(globalStatus, error.message, 'error');
+  });
+</script>
+</body>
+</html>

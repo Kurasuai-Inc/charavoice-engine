@@ -1,0 +1,61 @@
+services:
+  charavoice-engine:
+    build:
+      context: .
+      args:
+        # Required to build (GET /source reports it):
+        #   CHARAVOICE_SOURCE_COMMIT=$(git rev-parse HEAD) docker compose up -d --build
+        # Left empty here on purpose: a required ${VAR:?} would break every compose command
+        # (logs, ps, down). The Dockerfile refuses to build when it is empty.
+        CHARAVOICE_SOURCE_COMMIT: ${CHARAVOICE_SOURCE_COMMIT:-}
+    image: charavoice-engine:latest
+    container_name: charavoice-engine
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      # Model files (safetensors, config.json, style_vectors.npy)
+      - ./model_assets:/models:ro
+      # BERT ONNX models (auto-downloaded on first start)
+      - charavoice-bert:/app/bert
+      # TensorRT engine cache (persisted between restarts)
+      - charavoice-trt-cache:/app/trt_cache
+    environment:
+      # Languages to download BERT models for (comma-separated: JP,EN)
+      - CHARAVOICE_LANGS=${CHARAVOICE_LANGS:-JP,EN}
+      # Optional comma-separated model directory names to load. Empty loads every complete model under /models.
+      - CHARAVOICE_MODEL_KEYS=${CHARAVOICE_MODEL_KEYS:-}
+      # Optional worker metadata exposed from /status and /cluster-status.
+      - WORKER_SITE=${WORKER_SITE:-local}
+      # Public source location reported by GET /source (AGPL-3.0 §13). A fork points this at its own repository.
+      - CHARAVOICE_SOURCE_URL=${CHARAVOICE_SOURCE_URL:-https://github.com/Kurasuai-Inc/charavoice-engine}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command:
+      [
+        "--dir",
+        "/models",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "5000",
+        "--trt-cache",
+        "/app/trt_cache",
+        "--watermark",
+        "none",
+      ]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      interval: 30s
+      timeout: 5s
+      start_period: 600s
+      retries: 3
+
+volumes:
+  charavoice-bert:
+  charavoice-trt-cache:

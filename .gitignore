@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environment
+.venv/
+
+
+# Model assets (large files)
+model_assets/
+bert/
+slm/
+
+# TensorRT engine cache
+trt_cache*/
+
+# Claude Code
+.claude/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.runtime/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+Data/
+
+# Logs
+*.log
+logs/
+
+# Local benchmark / profiling artifacts
+artifacts/
+generated_samples/

@@ -1,0 +1,87 @@
+CHARAVOICE Engine
+Copyright 2024-2026 Kurasuai, Inc. and CHARAVOICE Engine contributors
+
+This project contains code derived from Style-Bert-VITS2 and is licensed
+under the GNU Affero General Public License v3.0 only (AGPL-3.0-only).
+See the LICENSE file for the full license text.
+
+This repository contains source code and small text data only. It does not
+contain trained model weights, voice data, or speaker datasets. Models that
+the engine downloads or mounts at runtime are listed below for attribution;
+they are not part of this repository and keep their own licenses.
+
+A full inventory (bundled code and data, runtime models, and Python
+dependencies with versions and licenses) is in THIRD_PARTY_LICENSES.md.
+
+==========================================================================
+Third-Party Notices: code and data included in this repository
+==========================================================================
+
+Style-Bert-VITS2
+  Copyright (c) 2023 litagin02
+  License: AGPL-3.0
+  https://github.com/litagin02/Style-Bert-VITS2
+  Files: most of src/charavoice_engine/models/, src/charavoice_engine/nlp/,
+    src/charavoice_engine/constants.py, src/charavoice_engine/config.py
+    (files marked "Ported from style_bert_vits2 ...")
+
+Bert-VITS2
+  Copyright (c) 2023 Fish Audio
+  License: AGPL-3.0
+  https://github.com/fishaudio/Bert-VITS2
+  (Style-Bert-VITS2 is derived from Bert-VITS2.)
+
+VOICEVOX ENGINE
+  Copyright (c) VOICEVOX project
+  License: LGPL-3.0
+  https://github.com/VOICEVOX/voicevox_engine
+  Files:
+    src/charavoice_engine/nlp/japanese/mora_list.py
+
+Open JTalk (mora table, via VOICEVOX ENGINE)
+  Copyright (c) 2008-2014 Nagoya Institute of Technology,
+    Department of Computer Science
+  Developed by HTS Working Group
+  License: Modified BSD (3-clause); the full notice is kept in the file header
+  http://open-jtalk.sourceforge.net/
+  Files:
+    src/charavoice_engine/nlp/japanese/mora_list.py
+
+The Carnegie Mellon Pronouncing Dictionary (cmudict 0.6)
+  Copyright 1998 by Carnegie Mellon University
+  License: "Use of this dictionary, for any research or commercial purpose,
+    is completely unrestricted." Acknowledgement of its origin is requested.
+  http://www.speech.cs.cmu.edu/cgi-bin/cmudict
+  Files:
+    src/charavoice_engine/nlp/english/cmudict.rep
+
+==========================================================================
+Attribution: models used at runtime (not included in this repository)
+==========================================================================
+
+DeBERTa V2 large Japanese char WWM (Japanese BERT)
+  ku-nlp/deberta-v2-large-japanese-char-wwm
+  License: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
+  https://huggingface.co/ku-nlp/deberta-v2-large-japanese-char-wwm
+  ONNX conversion used by the engine:
+    tsukumijima/deberta-v2-large-japanese-char-wwm-onnx (CC BY-SA 4.0)
+    https://huggingface.co/tsukumijima/deberta-v2-large-japanese-char-wwm-onnx
+  Changes: converted to ONNX by the converter above; the engine may further
+    convert it to FP16 and batched ONNX. Shared derivatives keep CC BY-SA 4.0.
+
+DeBERTa V3 large (English BERT)
+  microsoft/deberta-v3-large
+  License: MIT
+  https://huggingface.co/microsoft/deberta-v3-large
+  ONNX conversion: tsukumijima/deberta-v3-large-onnx (MIT)
+
+AudioSeal (audio watermark)
+  Copyright (c) Meta Platforms, Inc. and affiliates
+  License: MIT (code and model)
+  https://github.com/facebookresearch/audioseal
+  Model: facebook/audioseal (audioseal_wm_16bits)
+
+WavLM base plus (training only; used as the SLM discriminator)
+  microsoft/wavlm-base-plus
+  https://huggingface.co/microsoft/wavlm-base-plus
+  Not used for inference. Check its license before redistributing it.

@@ -1,0 +1,12 @@
+# Overlay calibration tools on a matching, model-bundled CHARAVOICE image.
+# The idle HTTP entrypoint keeps a Salad instance ready without loading the GPU
+# before the calibrator starts its sequential worker trials.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+COPY src/charavoice_engine/scripts/calibrate.py \
+     src/charavoice_engine/scripts/bench_server.py \
+     src/charavoice_engine/scripts/calibration_proxy.py \
+     src/charavoice_engine/scripts/calibration_idle.py \
+     src/charavoice_engine/scripts/run_calibrated.py \
+     /app/.venv/lib/python3.13/site-packages/charavoice_engine/scripts/
+ENTRYPOINT ["/app/.venv/bin/python", "-m", "charavoice_engine.scripts.calibration_idle"]
